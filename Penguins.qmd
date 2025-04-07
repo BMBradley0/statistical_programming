@@ -1,0 +1,132 @@
+---
+title: "Penguins"
+format: html
+embed-resources: true
+---
+
+```{r}
+library(modeldata)
+library(tidyverse)
+data(penguins)
+penguins <- na.omit(penguins)
+```
+
+## Problem 1
+
+```{r}
+anova_model <- aov(bill_length_mm ~ species, data = penguins)
+summary(anova_model)
+```
+
+```{r}
+ggplot(penguins, 
+       aes(x = species, 
+           y = bill_length_mm, 
+           fill = species)) +
+  geom_boxplot() +
+  labs(title = "Bill Length by Species", 
+       x = "Species", 
+       y = "Bill Length (mm)") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(legend.position = "none")
+```
+
+Null Hypothesis: The average bill length is equal across all three penguin species.
+
+Alternative Hypothesis: The mean bill length differs for at least one penguin species.
+
+**Interpretation:**
+The analysis provides extremely strong evidence (p < 0.00001) indicating that the average bill length varies significantly among penguin species. Follow-up comparisons show that Chinstrap penguins possess the longest bills on average, followed by Gentoo penguins, while Adelie penguins have the shortest. All pairwise comparisons between species demonstrate statistically meaningful differences.
+
+## Problem 2
+
+```{r}
+sex_species_table <- table(penguins$species, 
+                           penguins$sex)
+chisq.test(sex_species_table)
+```
+
+Null Hypothesis (H₀): The ratio of males to females is consistent across all three penguin species.
+
+Alternative Hypothesis (H₁): At least one penguin species has a different male-to-female ratio.
+
+**Interpretation:** The chi-squared test produced a p-value of 0.976, which is well above the 0.05 threshold. This indicates there is no significant evidence to support a difference in the male-to-female proportions among species. The results align with the assumption that all three species share similar gender distributions.
+
+## Problem 3
+```{r}
+mass_test <- t.test(body_mass_g ~ sex, 
+                    data = penguins)
+mass_test
+```
+
+```{r}
+ggplot(penguins, 
+       aes(x = sex, 
+           y = body_mass_g, 
+           fill = sex)) +
+  geom_boxplot() +
+  labs(title = "Body Mass by Sex", 
+       x = "Sex", 
+       y = "Body Mass (g)") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(legend.position = "none")
+```
+
+Null Hypothesis (H₀): There is no difference in average body mass between male and female penguins.
+
+Alternative Hypothesis (H₁): Male and female penguins have differing average body masses.
+
+**Interpretation:** The t-test resulted in a p-value well below 0.05 (p < 0.00001), providing strong statistical evidence of a difference in body mass between sexes. On average, male penguins are about 680 grams heavier than females.
+
+## Problem 4
+```{r}
+gentoo <- filter(penguins, 
+                 species == "Gentoo") %>%
+  mutate(length_group = if_else(bill_length_mm > median(bill_length_mm), 
+                                "Long", 
+                                "Short"))
+
+t.test(bill_depth_mm ~ length_group, 
+       data = gentoo)
+```
+
+```{r}
+ggplot(gentoo, 
+       aes(x = length_group, 
+           y = bill_depth_mm, 
+           fill = length_group)) +
+  geom_boxplot() +
+  labs(title = "Bill Depth by Bill Length Group in Gentoo Penguins",
+       x = "Bill Length Group", 
+       y = "Bill Depth (mm)") +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(legend.position = "none")
+```
+Null Hypothesis (H₀): In Gentoo penguins, bill length and bill depth are not related (they are independent).
+
+Alternative Hypothesis (H₁): In Gentoo penguins, bill length and bill depth are associated (they are correlated).
+
+**Interpretation:** A t-test was conducted to compare the bill depth of Gentoo penguins with longer versus shorter bills to assess whether bill depth varies with bill length. If the p-value is less than 0.05, we infer a relationship between the two traits. If not, the results support the idea that bill length and bill depth are independent.
+
+## Problem 5
+
+```{r}
+ggplot(penguins, 
+       aes(x = bill_length_mm, 
+           y = bill_depth_mm, 
+           color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm", 
+              se = FALSE) +
+  labs(title = "Bill Length vs. Bill Depth by Species",
+       x = "Bill Length (mm)", 
+       y = "Bill Depth (mm)") +
+  theme_minimal() +
+  scale_color_brewer(palette = "Dark2")
+```
+
+
+
